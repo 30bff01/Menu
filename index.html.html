@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>А ты где? Бургерная — меню кухни</title>
+<meta name="description" content="Меню кухни бургерной «А ты где?» в Екатеринбурге с калькулятором калорий, белков, жиров и углеводов.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Manrope:wght@400;600&display=swap">
+<style>
+:root{
+  --bg:#161617; --surface:#212224; --line:#34363a;
+  --text:#f1ede6; --muted:#a19d95;
+  --red:#c8352b; --gold:#e3a72f;
+  --p:#7fb7a4; --f:#e3a72f; --c:#8fa7c9;
+  --head:'Oswald','Arial Narrow',Impact,sans-serif;
+  --body:'Manrope',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 var(--body);padding-bottom:84px}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+/* шапка в виде вывески */
+.sign{background:#000;border-bottom:2px solid var(--gold);box-shadow:0 6px 18px rgba(227,167,47,.18)}
+.sign-in{max-width:1100px;margin:0 auto;padding:36px 20px 28px;position:relative}
+h1{font:700 clamp(46px,10vw,104px)/.95 var(--head);margin:0;text-transform:uppercase;letter-spacing:.01em}
+.word{display:block;font:700 clamp(24px,5vw,48px)/1 var(--head);text-transform:uppercase;margin-top:6px}
+.brush{display:block;width:min(260px,52vw);color:var(--red);margin:10px 0 0 -4px;transform:rotate(-1.5deg)}
+.sign p{margin:14px 0 0;color:var(--muted);max-width:48ch}
+
+.notice{max-width:1100px;margin:16px auto 0;padding:0 20px}
+.notice span{display:block;border-left:3px solid var(--gold);padding:8px 12px;background:var(--surface);color:var(--muted);font-size:14px}
+
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);margin-top:20px}
+.bar-in{max-width:1100px;margin:0 auto;padding:10px 20px;display:flex;gap:8px;overflow-x:auto;align-items:center}
+.tab{flex:none;border:1px solid var(--line);background:none;border-radius:999px;padding:6px 16px;cursor:pointer;color:var(--muted)}
+.tab[aria-pressed="true"]{background:var(--red);border-color:var(--red);color:#fff;font-weight:600}
+.sep{flex:none;width:1px;height:22px;background:var(--line);margin:0 6px}
+
+.filters{max-width:1100px;margin:0 auto;padding:16px 20px 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.flabel{color:var(--muted);font-size:13px}
+.fsep{width:1px;height:22px;background:var(--line);margin:0 6px}
+.chip{border:1px solid var(--line);background:none;border-radius:999px;padding:4px 14px;cursor:pointer;color:var(--muted);font-size:14px}
+.chip[aria-pressed="true"]{background:var(--gold);border-color:var(--gold);color:#161617;font-weight:600}
+.reset{background:none;border:none;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0 4px}
+.layout{max-width:1100px;margin:0 auto;padding:24px 20px;display:grid;grid-template-columns:1fr 340px;gap:40px;align-items:start}
+.cat-title{font:700 30px/1.1 var(--head);margin:34px 0 4px;display:flex;align-items:center;gap:12px}
+.cat-title::after{content:"";flex:1;height:2px;background:linear-gradient(90deg,var(--red),transparent)}
+.cat-title:first-child{margin-top:0}
+
+/* блюдо в виде строки меню */
+.dish{display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--line)}
+.thumb{flex:none;width:88px;height:88px;object-fit:cover;border-radius:4px;background:var(--surface)}
+.info{flex:1;min-width:0}
+.dish h3{font:500 21px/1.2 var(--head);margin:0}
+.tag{display:inline-block;margin-left:8px;font:600 12px var(--body);color:var(--p);border:1px solid var(--p);border-radius:999px;padding:0 8px;vertical-align:middle}
+.desc{margin:4px 0 8px;color:var(--muted);font-size:14px}
+.kbzhu{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--muted)}
+.kbzhu b{color:var(--text);font-weight:600}
+.kbzhu i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.side{flex:none;display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;gap:8px}
+.price{font:700 22px var(--head);color:var(--gold)}
+.add{border:none;background:var(--red);color:#fff;border-radius:999px;padding:7px 16px;cursor:pointer;font-weight:600;white-space:nowrap}
+.add:hover{background:#dc4337}
+.empty{color:var(--muted)}
+
+/* калькулятор */
+.calc{background:var(--surface);border-radius:8px;padding:20px;position:sticky;top:72px;border-top:3px solid var(--red)}
+.calc h2{font:700 26px/1 var(--head);margin:0 0 14px}
+.sum-toggle{display:none}
+.total{display:flex;align-items:baseline;gap:8px}
+.total b{font:700 54px/1 var(--head)}
+.total span{color:var(--muted)}
+.goal{display:flex;align-items:center;gap:8px;margin:12px 0 6px;font-size:14px;color:var(--muted)}
+.goal input{width:84px;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:4px 8px}
+.prog{height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:var(--red);transition:width .25s}
+.hint{font-size:13px;color:var(--muted);margin:6px 0 16px;min-height:20px}
+.hint.over{color:var(--gold);font-weight:600}
+.macros{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.macros div{border-top:3px solid;padding-top:6px}
+.macros b{display:block;font:700 22px var(--head)}
+.macros span{font-size:13px;color:var(--muted)}
+.share{display:flex;height:8px;border-radius:4px;overflow:hidden;background:var(--bg);margin-bottom:18px}
+.share i{display:block;transition:width .25s}
+.items{list-style:none;margin:0 0 14px;padding:0;max-height:240px;overflow:auto}
+.items li{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+.items .n{flex:1}
+.qty{display:flex;align-items:center;gap:6px}
+.qty button{width:28px;height:28px;border-radius:50%;border:1px solid var(--line);background:none;cursor:pointer}
+.qty button:hover{border-color:var(--red)}
+.clear{background:none;border:none;color:var(--muted);text-decoration:underline;cursor:pointer;padding:0}
+
+@media (max-width:820px){
+  .layout{grid-template-columns:1fr}
+  .calc{position:fixed;left:0;right:0;bottom:0;top:auto;border-radius:14px 14px 0 0;z-index:10;padding:12px 20px;box-shadow:0 -8px 24px rgba(0,0,0,.5)}
+  .sum-toggle{display:flex;width:100%;justify-content:space-between;align-items:center;background:none;border:none;padding:6px 0;cursor:pointer;font-weight:600}
+  .sum-toggle b{color:var(--gold)}
+  .calc-body{display:none;max-height:70vh;overflow:auto;padding-top:10px}
+  .calc.open .calc-body{display:block}
+  .calc h2{display:none}
+  .thumb{width:72px;height:72px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<header class="sign"><div class="sign-in">
+  <h1>А ты где?</h1>
+  <span class="word">Бургерная</span>
+  <svg class="brush" viewBox="0 0 300 40" aria-hidden="true"><path fill="currentColor" d="M3 24C40 8 92 30 142 17S232 5 297 19l-5 13c-52-9-103 6-160 0S48 38 6 33z"/></svg>
+  <p>Меню кухни. Выбирайте блюда и сразу смотрите, сколько в них калорий, белков, жиров и углеводов.</p>
+</div></header>
+
+<div class="notice"><span>Цены, вес и КБЖУ в таблице пока тестовые. Замените их данными из технологических карт и уберите эту плашку.</span></div>
+
+<div class="bar"><div class="bar-in" id="tabs"></div></div>
+<div class="filters" id="filters"></div>
+
+<div class="layout">
+  <main id="menu"></main>
+
+  <aside class="calc" id="calc" aria-label="Калькулятор КБЖУ">
+    <button class="sum-toggle" id="toggle" aria-expanded="false">
+      <span>Мой заказ: <b id="miniKcal">0 ккал</b></span><span id="chev">Развернуть</span>
+    </button>
+    <div class="calc-body">
+      <h2>Мой заказ</h2>
+      <div class="total"><b id="kcal">0</b><span>ккал</span></div>
+      <label class="goal">Цель на приём пищи
+        <input type="number" id="goal" value="700" min="100" step="50"> ккал
+      </label>
+      <div class="prog"><i id="bar"></i></div>
+      <div class="hint" id="hint"></div>
+      <div class="macros">
+        <div style="border-color:var(--p)"><b id="tp">0</b><span>белки, г</span></div>
+        <div style="border-color:var(--f)"><b id="tf">0</b><span>жиры, г</span></div>
+        <div style="border-color:var(--c)"><b id="tc">0</b><span>углеводы, г</span></div>
+      </div>
+      <div class="share" id="share" title="Доля калорий из белков, жиров и углеводов">
+        <i style="background:var(--p)"></i><i style="background:var(--f)"></i><i style="background:var(--c)"></i>
+      </div>
+      <ul class="items" id="items"></ul>
+      <button class="clear" id="clear">Очистить заказ</button>
+    </div>
+  </aside>
+</div>
+
+<script>
+// Ссылка на опубликованную Google Таблицу (лист «menu», формат CSV).
+const SHEET_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQSNxJNTyVqucuMR73m2SPESyK_a0GALuGj4Kbsu4pQfuUkLD7sxr34J45nHUa2qEIO_H4BdlI7k-WT/pub?output=csv';
+
+// Запасное меню: показывается, если таблица недоступна или пуста.
+// k — ккал, p — белки, f — жиры, c — углеводы на порцию. Обновляйте его раз в месяц.
+const BACKUP = [
+ {
+  "id": 1,
+  "cat": "Бургеры",
+  "name": "А ты где?",
+  "desc": "Соус коул слоу, салат айсберг, томат свежий, котлета, бекон жареный, сыр чеддер, перец халапеньо, лук красный.",
+  "price": null,
+  "w": 290,
+  "k": null,
+  "p": null,
+  "f": null,
+  "c": null,
+  "photo": "",
+  "veg": false,
+  "show": true,
+  "bun": "белая",
+  "fill": "котлета"
+ },
+ {
+  "id": 2,
+  "cat": "Бургеры",
+  "name": "Без Б…",
+  "desc": "Салат айсберг, руккола, томат свежий, котлета, сыр чеддер, соус 1000 островов, огурец свежий.",
+  "price": null,
+  "w": 220,
+  "k": null,
+  "p": null,
+  "f": null,
+  "c": null,
+  "photo": "",
+  "veg": false,
+  "show": true,
+  "bun": "без булочки",
+  "fill": "котлета"
+ },
+ {
+  "id": 3,
+  "cat": "Бургеры",
+  "name": "Любовь зла",
+  "desc": "Соус тар-тар, салат айсберг, хэшбраун, грибы жареные, сыр чеддер, огурец свежий.",
+  "price": null,
+  "w": 280,
+  "k": null,
+  "p": null,
+  "f": null,
+  "c": null,
+  "photo": "",
+  "veg": false,
+  "show": true,
+  "bun": "белая",
+  "fill": "картофельная котлета"
+ },
+ {
+  "id": 4,
+  "cat": "Бургеры",
+  "name": "Без Б с курицей",
+  "desc": "Салат айсберг, руккола, томат свежий, куриное филе, сыр чеддер, соус 1000 островов, огурец свежий.",
+  "price": null,
+  "w": 220,
+  "k": null,
+  "p": null,
+  "f": null,
+  "c": null,
+  "photo": "",
+  "veg": false,
+  "show": true,
+  "bun": "без булочки",
+  "fill": "курица"
+ },
+ {
+  "id": 5,
+  "cat": "Бургеры",
+  "name": "Что-то в этом есть",
+  "desc": "Соус белый шаурма, салат айсберг, котлета, сыр моцарелла, сыр рокфорти с плесенью, сыр чеддер, сыр пармезан, перец халапеньо.",
+  "price": null,
+  "w": 280,
+  "k": null,
+  "p": null,
+  "f": null,
+  "c": null,
+  "photo": "",
+  "veg": false,
+  "show": true,
+  "bun": "белая",
+  "fill": "котлета"
+ },
+ {
+  "id": 6,
+  "cat": "Бургеры",
+  "name": "Чао белла",
+  "desc": "Соус песто, салат айсберг, котлета, сыр моцарелла, пепперони, сыр пармезан, соус пицца.",
+  "price": null,
+  "w": 280,
+  "k": null,
+  "p": null,
+  "f": null,
+  "c": null,
+  "photo": "",
+  "veg": false,
+  "show": true,
+  "bun": "белая",
+  "fill": "котлета"
+ },
+ {
+  "id": 7,
+  "cat": "Бургеры",
+  "name": "Цыпа моя",
+  "desc": "Соус пармеджано, руккола, томат свежий, куриное филе, огурец свежий, соус устричный.",
+  "price": null,
+  "w": 300,
+  "k": null,
+  "p": null,
+  "f": null,
+  "c": null,
+  "photo": "",
+  "veg": false,
+  "show": true,
+  "bun": "белая",
+  "fill": "курица"
+ },
+ {
+  "id": 8,
+  "cat": "Бургеры",
+  "name": "Черная цыпа",
+  "desc": "Соус 1000 островов, салат айсберг, куриное филе, сыр чеддер, ананас консервированный, перец халапеньо.",
+  "price": null,
+  "w": 260,
+  "k": null,
+  "p": null,
+  "f": null,
+  "c": null,
+  "photo": "",
+  "veg": false,
+  "show": true,
+  "bun": "черная",
+  "fill": "курица"
+ },
+ {
+  "id": 9,
+  "cat": "Бургеры",
+  "name": "Блэк лук",
+  "desc": "Соус барбекю, салат айсберг, луковые кольца, котлета, бекон жареный, перец печеный, лук карамельный, сыр чеддер, перец халапеньо.",
+  "price": null,
+  "w": 340,
+  "k": null,
+  "p": null,
+  "f": null,
+  "c": null,
+  "photo": "",
+  "veg": false,
+  "show": true,
+  "bun": "черная",
+  "fill": "котлета"
+ },
+ {
+  "id": 10,
+  "cat": "Бургеры",
+  "name": "Уснул на пляже",
+  "desc": "Соус устричный, руккола, котлета, заправка BBQ, перец печеный, сыр чеддер.",
+  "price": null,
+  "w": 280,
+  "k": null,
+  "p": null,
+  "f": null,
+  "c": null,
+  "photo": "",
+  "veg": false,
+  "show": true,
+  "bun": "черная",
+  "fill": "котлета"
+ },
+ {
+  "id": 11,
+  "cat": "Бургеры",
+  "name": "Я не в теме",
+  "desc": "Соус творожный, руккола, томат свежий, котлета, креветки жареные, сыр чеддер, соус устричный.",
+  "price": null,
+  "w": 300,
+  "k": null,
+  "p": null,
+  "f": null,
+  "c": null,
+  "photo": "",
+  "veg": false,
+  "show": true,
+  "bun": "черная",
+  "fill": "котлета"
+ },
+ {
+  "id": 12,
+  "cat": "Бургеры",
+  "name": "Я не такой",
+  "desc": "Соус тар-тар, руккола, томат свежий, креветки жареные, соус шаурма, огурец свежий, томаты вяленые.",
+  "price": null,
+  "w": 220,
+  "k": null,
+  "p": null,
+  "f": null,
+  "c": null,
+  "photo": "",
+  "veg": false,
+  "show": true,
+  "bun": "черная",
+  "fill": ""
+ },
+ {
+  "id": 13,
+  "cat": "Салаты",
+  "name": "Салат с курицей",
+  "desc": "Салат айсберг, соус для салата с курицей, гренки, томаты черри, жареная куриная грудка, пармезан.",
+  "price": null,
+  "w": 195,
+  "k": null,
+  "p": null,
+  "f": null,
+  "c": null,
+  "photo": "",
+  "veg": false,
+  "show": true,
+  "bun": "",
+  "fill": ""
+ },
+ {
+  "id": 14,
+  "cat": "Салаты",
+  "name": "Салат с креветками",
+  "desc": "Салат айсберг, руккола, огурец свежий, томаты черри, томаты вяленые, соус 1000 островов, креветки жареные, пармезан.",
+  "price": null,
+  "w": 170,
+  "k": null,
+  "p": null,
+  "f": null,
+  "c": null,
+  "photo": "",
+  "veg": false,
+  "show": true,
+  "bun": "",
+  "fill": ""
+ },
+ {
+  "id": 15,
+  "cat": "Салаты",
+  "name": "Салат томаты черри с красным луком",
+  "desc": "Томаты черри, красный лук, соус бальзамический.",
+  "price": null,
+  "w": 140,
+  "k": null,
+  "p": null,
+  "f": null,
+  "c": null,
+  "photo": "",
+  "veg": false,
+  "show": true,
+  "bun": "",
+  "fill": ""
+ },
+ {
+  "id": 16,
+  "cat": "Снеки",
+  "name": "Картофель фри",
+  "desc": "Картофель фри, соль морская.",
+  "price": null,
+  "w": 100,
+  "k": null,
+  "p": null,
+  "f": null,
+  "c": null,
+  "photo": "",
+  "veg": false,
+  "show": true,
+  "bun": "",
+  "fill": ""
+ },
+ {
+  "id": 17,
+  "cat": "Снеки",
+  "name": "Фирменный фри",
+  "desc": "Картофельные дольки, пармезан.",
+  "price": null,
+  "w": 120,
+  "k": null,
+  "p": null,
+  "f": null,
+  "c": null,
+  "photo": "",
+  "veg": false,
+  "show": true,
+  "bun": "",
+  "fill": ""
+ },
+ {
+  "id": 18,
+  "cat": "Снеки",
+  "name": "Луковые кольца",
+  "desc": "Луковые кольца.",
+  "price": null,
+  "w": 100,
+  "k": null,
+  "p": null,
+  "f": null,
+  "c": null,
+  "photo": "",
+  "veg": false,
+  "show": true,
+  "bun": "",
+  "fill": ""
+ },
+ {
+  "id": 19,
+  "cat": "Снеки",
+  "name": "Сырные палочки",
+  "desc": "Сырные палочки.",
+  "price": null,
+  "w": 140,
+  "k": null,
+  "p": null,
+  "f": null,
+  "c": null,
+  "photo": "",
+  "veg": false,
+  "show": true,
+  "bun": "",
+  "fill": ""
+ },
+ {
+  "id": 20,
+  "cat": "Снеки",
+  "name": "Куриные крылья",
+  "desc": "Куриные крылья.",
+  "price": null,
+  "w": 190,
+  "k": null,
+  "p": null,
+  "f": null,
+  "c": null,
+  "photo": "",
+  "veg": false,
+  "show": true,
+  "bun": "",
+  "fill": ""
+ },
+ {
+  "id": 21,
+  "cat": "Снеки",
+  "name": "Наггетсы куриные",
+  "desc": "Куриные наггетсы.",
+  "price": null,
+  "w": 114,
+  "k": null,
+  "p": null,
+  "f": null,
+  "c": null,
+  "photo": "",
+  "veg": false,
+  "show": true,
+  "bun": "",
+  "fill": ""
+ },
+ {
+  "id": 22,
+  "cat": "Снеки",
+  "name": "Ведро гвоздей",
+  "desc": "Хлеб бородинский, чесночное масло, соль морская.",
+  "price": null,
+  "w": 200,
+  "k": null,
+  "p": null,
+  "f": null,
+  "c": null,
+  "photo": "",
+  "veg": false,
+  "show": true,
+  "bun": "",
+  "fill": ""
+ },
+ {
+  "id": 23,
+  "cat": "Снеки",
+  "name": "Креветки в панировке",
+  "desc": "Креветки в панировке.",
+  "price": null,
+  "w": 145,
+  "k": null,
+  "p": null,
+  "f": null,
+  "c": null,
+  "photo": "",
+  "veg": false,
+  "show": true,
+  "bun": "",
+  "fill": ""
+ },
+ {
+  "id": 24,
+  "cat": "Снеки",
+  "name": "Пивная тарелка",
+  "desc": "Картофель фри, луковые кольца, куриные крылья, ведро гвоздей.",
+  "price": null,
+  "w": 680,
+  "k": null,
+  "p": null,
+  "f": null,
+  "c": null,
+  "photo": "",
+  "veg": false,
+  "show": true,
+  "bun": "",
+  "fill": ""
+ }
+];
+
+let MENU = [], CATS = [];   // заполняются в setMenu()
+
+// Разбор CSV: учитывает кавычки, запятые и переносы строк внутри ячеек.
+function parseCSV(text){
+  const rows = []; let row = [], cell = '', q = false;
+  text = text.replace(/^\uFEFF/, '');
+  for(let i = 0; i < text.length; i++){
+    const ch = text[i];
+    if(q){
+      if(ch === '"'){ if(text[i+1] === '"'){ cell += '"'; i++; } else q = false; }
+      else cell += ch;
+    } else if(ch === '"') q = true;
+    else if(ch === ','){ row.push(cell); cell = ''; }
+    else if(ch === '\n' || ch === '\r'){
+      if(ch === '\r' && text[i+1] === '\n') i++;
+      row.push(cell); rows.push(row); row = []; cell = '';
+    } else cell += ch;
+  }
+  if(cell || row.length){ row.push(cell); rows.push(row); }
+  return rows;
+}
+
+// Превращает строки таблицы в блюда. Колонки ищутся по названиям из первой строки.
+function rowsToMenu(rows){
+  const head = rows[0].map(h => h.trim().toLowerCase());
+  for(const need of ['категория','название','цена']) if(!head.includes(need)) throw new Error('нет колонки «' + need + '»');
+  const norm = v => String(v || '').trim().toLowerCase().replace(/ё/g, 'е');
+  const num = v => { const x = parseFloat(String(v || '').replace(/\s/g, '').replace(',', '.')); return (String(v || '').trim() === '' || isNaN(x)) ? null : x; };
+  return rows.slice(1).map(r => {
+    const g = name => { const i = head.indexOf(name); return i < 0 ? '' : (r[i] || '').trim(); };
+    return { cat:g('категория'), name:g('название'), desc:g('описание'), price:num(g('цена')), w:num(g('вес')),
+      k:num(g('ккал')), p:num(g('белки')), f:num(g('жиры')), c:num(g('углеводы')), photo:g('фото'),
+      veg:norm(g('без мяса')) === 'да', show:norm(g('показывать')) !== 'нет',
+      bun:norm(g('булочка')), fill:norm(g('начинка')) };
+  }).filter(d => d.cat && d.name).map((d, i) => ({ ...d, id: i + 1 }));
+}
+
+// Категории берутся из таблицы в порядке первого появления.
+function setMenu(list){
+  MENU = list.filter(d => d.show);
+  CATS = [...new Set(MENU.map(d => d.cat))];
+  state.cart = {};
+  if(state.cat !== 'Все' && !CATS.includes(state.cat)) state.cat = 'Все';
+}
+
+async function loadMenu(){
+  try{
+    const res = await fetch(SHEET_CSV, { cache:'no-cache' });
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const list = rowsToMenu(parseCSV(await res.text()));
+    if(!list.length) throw new Error('в таблице нет блюд');
+    setMenu(list); renderAll();
+    document.body.dataset.menu = 'sheet';
+  }catch(err){
+    console.warn('Таблица недоступна, показано запасное меню:', err);
+    document.body.dataset.menu = 'backup';
+  }
+}
+// Фильтры бургеров. Внутри группы выбор «или» (белая или черная),
+// между группами «и» (черная булочка и с курицей).
+const BUNS  = [['белая','Белая булочка'], ['черная','Черная булочка'], ['без булочки','Без булочки']];
+const FILLS = [['котлета','С котлетой'], ['курица','С курицей'], ['картофельная котлета','С картофельной котлетой']];
+const state = { cat:'Все', bun:new Set(), fill:new Set(), cart:{} };
+const flip = (set, key) => set.has(key) ? set.delete(key) : set.add(key);
+const matches = d =>
+  (!state.bun.size || state.bun.has(d.bun)) && (!state.fill.size || state.fill.has(d.fill));
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function renderTabs(){
+  $('tabs').innerHTML = ['Все', ...CATS].map(c =>
+    `<button class="tab" data-cat="${esc(c)}" aria-pressed="${state.cat===c}">${esc(c)}</button>`).join('');
+}
+
+function renderFilters(){
+  const chip = (attr, key, label, on) => `<button class="chip" data-${attr}="${esc(key)}" aria-pressed="${on}">${label}</button>`;
+  const any = state.bun.size || state.fill.size;
+  $('filters').innerHTML =
+    '<span class="flabel">Булочка</span>' + BUNS.map(([k,l]) => chip('bun', k, l, state.bun.has(k))).join('') +
+    '<span class="fsep"></span><span class="flabel">Начинка</span>' + FILLS.map(([k,l]) => chip('fill', k, l, state.fill.has(k))).join('') +
+    (any ? '<button class="reset" data-reset>Сбросить</button>' : '');
+}
+
+function renderMenu(){
+  let html = '';
+  for(const cat of CATS){
+    if(state.cat!=='Все' && state.cat!==cat) continue;
+    const dishes = MENU.filter(d => d.cat===cat && matches(d));
+    if(!dishes.length) continue;
+    html += `<h2 class="cat-title">${esc(cat)}</h2>` + dishes.map(d => `
+      <article class="dish">
+        ${d.photo ? `<img class="thumb" src="img/${esc(d.photo)}" alt="${esc(d.name)}" loading="lazy" onerror="this.remove()">` : ''}
+        <div class="info">
+          <h3>${esc(d.name)}${d.veg ? '<span class="tag">без мяса</span>' : ''}</h3>
+          <p class="desc">${esc(d.desc)}</p>
+          <div class="kbzhu">${d.k == null ? '<span>КБЖУ уточняется</span>' : `<b>${d.k} ккал</b>
+            <span><i style="background:var(--p)"></i>Б ${d.p ?? 0}</span>
+            <span><i style="background:var(--f)"></i>Ж ${d.f ?? 0}</span>
+            <span><i style="background:var(--c)"></i>У ${d.c ?? 0}</span>`}${d.w != null ? `<span>${d.w} г</span>` : ''}</div>
+        </div>
+        <div class="side"><span class="price">${d.price != null ? d.price + ' ₽' : ''}</span>
+          <button class="add" data-add="${d.id}" aria-label="Добавить в заказ: ${esc(d.name)}">В заказ</button></div>
+      </article>`).join('');
+  }
+  $('menu').innerHTML = html || '<p class="empty">По этим фильтрам блюд нет. Снимите часть фильтров или выберите другую категорию.</p>';
+}
+
+function renderCalc(){
+  const t = {k:0,p:0,f:0,c:0}, rows = []; let missing = 0;
+  for(const id in state.cart){
+    const d = MENU.find(x => x.id==id), q = state.cart[id];
+    if(d.k == null) missing++; t.k+=(d.k||0)*q; t.p+=(d.p||0)*q; t.f+=(d.f||0)*q; t.c+=(d.c||0)*q;
+    rows.push(`<li><span class="n">${esc(d.name)}</span><span class="qty">
+      <button data-dec="${id}" aria-label="Убрать одну порцию">−</button>${q}<button data-inc="${id}" aria-label="Добавить порцию">+</button></span></li>`);
+  }
+  $('items').innerHTML = rows.join('') || '<li class="empty">Пока пусто. Добавьте блюдо из меню.</li>';
+  $('kcal').textContent = t.k; $('miniKcal').textContent = t.k + ' ккал';
+  $('tp').textContent = t.p; $('tf').textContent = t.f; $('tc').textContent = t.c;
+
+  const goal = Math.max(+$('goal').value || 0, 1);
+  $('bar').style.width = Math.min(t.k/goal*100, 100) + '%';
+  $('hint').className = 'hint' + (t.k > goal ? ' over' : '');
+  $('hint').textContent = (!t.k ? '' : t.k > goal ? `Выше цели на ${t.k-goal} ккал` : `До цели осталось ${goal-t.k} ккал`) +
+    (missing ? ' Для части блюд нет данных КБЖУ, итог неполный.' : '');
+
+  // белки и углеводы дают по 4 ккал на грамм, жиры по 9
+  const e = [t.p*4, t.f*9, t.c*4], sum = e[0]+e[1]+e[2] || 1;
+  [...$('share').children].forEach((el,i) => el.style.width = (e[i]/sum*100) + '%');
+}
+
+document.addEventListener('click', ev => {
+  const b = ev.target.closest('button'); if(!b) return;
+  const ds = b.dataset;
+  if('cat' in ds){ state.cat = ds.cat; renderTabs(); renderMenu(); }
+  else if('bun' in ds){ flip(state.bun, ds.bun); renderFilters(); renderMenu(); }
+  else if('fill' in ds){ flip(state.fill, ds.fill); renderFilters(); renderMenu(); }
+  else if('reset' in ds){ state.bun.clear(); state.fill.clear(); renderFilters(); renderMenu(); }
+  else if('add' in ds || 'inc' in ds){ const id = ds.add || ds.inc; state.cart[id] = (state.cart[id]||0)+1; renderCalc(); }
+  else if('dec' in ds){ const id = ds.dec; if(--state.cart[id] <= 0) delete state.cart[id]; renderCalc(); }
+});
+$('goal').addEventListener('input', renderCalc);
+$('clear').addEventListener('click', () => { state.cart = {}; renderCalc(); });
+$('toggle').addEventListener('click', () => {
+  const open = $('calc').classList.toggle('open');
+  $('toggle').setAttribute('aria-expanded', open);
+  $('chev').textContent = open ? 'Свернуть' : 'Развернуть';
+});
+
+function renderAll(){ renderTabs(); renderFilters(); renderMenu(); renderCalc(); }
+
+setMenu(BACKUP); renderAll();   // сразу показываем запасное меню
+loadMenu();                     // затем подменяем его данными из таблицы
+</script>
+</body>
+</html>
